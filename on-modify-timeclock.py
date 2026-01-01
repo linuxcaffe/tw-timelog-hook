@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Writes task start/stop times to a timelog formatted file.
 # You might need to adjust LEDGERFILE, or set the TIMELOG environment variable.
