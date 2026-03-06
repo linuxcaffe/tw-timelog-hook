@@ -5,6 +5,10 @@ on-modify_timelog.py — Write hledger timeclock entries on task start/stop
 When a task is started or stopped, writes a timeclock i/o pair to the
 configured file, queryable with hledger or ledger for time reports.
 
+If a manual 't in' session is open when a task stops, the hook pauses it
+(closes at task-start, writes task entry, reopens at task-stop) to keep
+the timeclock file valid and avoid overlapping sessions.
+
 Config: ~/.task/config/timelog.rc
   timelog.file = ~/.task/time/tw.timeclock
 
@@ -13,7 +17,7 @@ Backdate: add a plain-number annotation when starting/stopping to backdate:
   task <id> stop;  task <id> annotate 10   → stop  recorded 10 minutes ago
 
 Install: ~/.task/hooks/on-modify_timelog.py
-Version: 1.0.0
+Version: 1.1.0
 """
 
 import sys
@@ -25,7 +29,7 @@ from pathlib import Path
 
 CONFIG_FILE = Path.home() / '.task' / 'config' / 'timelog.rc'
 DEFAULT_FILE = Path.home() / '.task' / 'time' / 'tw.timeclock'
-VERSION = '1.0.0'
+VERSION = '1.1.0'
 
 
 def get_config(key: str, default: str = '') -> str:
@@ -82,6 +86,29 @@ def pop_backdate(task: dict) -> tuple:
     return task, int(last)
 
 
+def get_open_session(tc_path: Path):
+    """Return (account_and_desc, started_dt) if there's an open 'i' entry, else None.
+    account_and_desc is everything after 'i DATE TIME ' on the last i-line."""
+    if not tc_path.exists():
+        return None
+    io_lines = []
+    with tc_path.open(encoding='utf-8') as f:
+        for line in f:
+            if line.startswith('i ') or line.startswith('o '):
+                io_lines.append(line.rstrip('\n'))
+    if not io_lines or not io_lines[-1].startswith('i '):
+        return None
+    # Format: "i YYYY/MM/DD HH:MM:SS account  rest..."
+    parts = io_lines[-1].split(None, 3)  # ['i', 'date', 'time', 'account rest...']
+    if len(parts) < 4:
+        return None
+    try:
+        started_dt = datetime.strptime(f'{parts[1]} {parts[2]}', '%Y/%m/%d %H:%M:%S')
+    except ValueError:
+        return None
+    return parts[3], started_dt
+
+
 def main() -> None:
     old = json.loads(sys.stdin.readline())
     new = json.loads(sys.stdin.readline())
@@ -125,10 +152,33 @@ def main() -> None:
         tag_str = ', '.join(tags)
         comment = f'; {tag_str}  uuid:{uuid}' if tag_str else f'; uuid:{uuid}'
 
-        entry = (
+        task_entry = (
             f'i {tc_ts(started)} {project}  {desc}  {comment}\n'
             f'o {tc_ts(stopped)}\n\n'
         )
+
+        # If a manual 't in' session is open, pause it around the task entry
+        # to keep the timeclock file strictly alternating i/o.
+        open_sess = get_open_session(tc_path)
+        if open_sess:
+            open_acct_desc, open_started = open_sess
+            open_acct = open_acct_desc.split()[0]
+            if open_started <= started:
+                # Normal: pause the open session, write task, resume after
+                entry = (
+                    f'o {tc_ts(started)}  ; paused: {open_acct}\n\n'
+                    + task_entry
+                    + f'i {tc_ts(stopped)} {open_acct_desc}\n\n'
+                )
+                print(f'Timelog: paused {open_acct}; resumed after task.')
+            else:
+                # Open session started after task — can't insert cleanly; skip
+                print(f'Timelog: WARNING open {open_acct} session overlaps task start; '
+                      'entry not written. Run "t" to fix.', file=sys.stderr)
+                print(json.dumps(new))
+                return
+        else:
+            entry = task_entry
 
         tc_path.parent.mkdir(parents=True, exist_ok=True)
         with tc_path.open('a', encoding='utf-8') as f:
