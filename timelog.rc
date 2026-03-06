@@ -1,6 +1,14 @@
-# timelog.rc
-# config file for https://github.com/linuxcaffe/task-timelog-hook
-# to activate, include this file from your .taskrc
+# timelog.rc — shared config for tw-timelog-hook and t
+# Copy to: ~/.task/config/timelog.rc
 #
-alias.time=exec ~/.task/hooks/task-timelog-hook/t
-alias.timedot=exec ~/.task/hooks/task-timelog-hook/t.
+# Include in .taskrc with:
+#   include ~/.task/config/timelog.rc
+#
+# Used by:
+#   on-modify_timelog.py  — hook: auto-logs task start/stop times
+#   t                     — script: query and manage the timelog
+
+timelog.file       = ~/.task/time/tw.timeclock
+timelog.tz         = America/Toronto
+timelog.ledger_bin = hledger
+# timelog.editor   = vi        # defaults to $EDITOR
