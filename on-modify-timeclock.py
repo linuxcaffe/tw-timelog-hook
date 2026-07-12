@@ -125,8 +125,17 @@ def dt_to_tw(d):
 
 
 if __name__ == '__main__':
-    old = json.loads(sys.stdin.readline())
-    new = json.loads(sys.stdin.readline())
+    old_line = sys.stdin.readline()
+    new_line = sys.stdin.readline()
+
+    # Guard: undo-of-add sends only 1 line (no "new" state); pass through silently.
+    if not old_line.strip() or not new_line.strip():
+        if old_line.strip():
+            print(old_line.strip())  # echo what we got
+        sys.exit(0)
+
+    old = json.loads(old_line)
+    new = json.loads(new_line)
 
     annotation_added = ('annotations' in new and not 'annotations' in old) \
                         or \
