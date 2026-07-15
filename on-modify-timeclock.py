@@ -198,3 +198,14 @@ if __name__ == '__main__':
             ledger.write(tw_entry.encode("utf-8"))
 
     print(json.dumps(new))
+
+
+def format_tags(tags):
+    """Format tags as `tag1: tag2: tag3:` instead of `tag1,tag2,tag3:`."""
+    if not tags:
+        return ""
+    if isinstance(tags, str):
+        parts = [p.strip() for p in re.split(r"[,\s]+", tags) if p.strip()]
+    else:
+        parts = [str(t).strip() for t in tags if str(t).strip()]
+    return " ".join(f"{p}:" for p in parts)
