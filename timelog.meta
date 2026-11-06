@@ -1,10 +1,10 @@
 # timelog.meta
-# Records task start/ stop times to an hledger-compatible timeclock file
+# Records task start and stop times in an hledger timeclock file
 
 name=timelog
 version=2.2.0
 type=hook
-description=Records task start/ stop times to an hledger-compatible timeclock file
+description=Records task start and stop times in an hledger timeclock file
 repo=https://github.com/linuxcaffe/tw-timelog-hook
 base_url=https://raw.githubusercontent.com/linuxcaffe/tw-timelog-hook/main
 files=on-exit_stop-started.sh:hook,on-modify_timelog.py:hook,timelog.rc:config,README.md:doc
