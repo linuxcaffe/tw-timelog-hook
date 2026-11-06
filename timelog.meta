@@ -2,7 +2,7 @@
 # Records task start and stop times in an hledger timeclock file
 
 name=timelog
-version=2.2.0
+version=2.2.1
 type=hook
 description=Records task start and stop times in an hledger timeclock file
 repo=https://github.com/linuxcaffe/tw-timelog-hook
@@ -10,7 +10,7 @@ base_url=https://raw.githubusercontent.com/linuxcaffe/tw-timelog-hook/main
 files=on-exit_stop-started.sh:hook,on-modify_timelog.py:hook,timelog.rc:config,README.md:doc
 tags=time, log, start, stop, hledger, hook
 
-checksums=9f2f74cd632ec37d15c121b60b8150f257a2c38afb5c137737f4950cd03428de,b3bd4a438a31eca8536171d96364d1ecd26b74167accc9f997cc06732783e8b7,91c17695fbbd8bfdacc39352cb06b7b6e6da14ee8f22c88389287d518f6780d2,62deba009e406bda660d60e17a5bfc4a6c157a51f3d40eee6fd89413eee460bd
+checksums=3165d5f34a3a61ed888d09fad9809ae1d403dc42dfbb6c6856a367d41ae6bff9,b3bd4a438a31eca8536171d96364d1ecd26b74167accc9f997cc06732783e8b7,91c17695fbbd8bfdacc39352cb06b7b6e6da14ee8f22c88389287d518f6780d2,62deba009e406bda660d60e17a5bfc4a6c157a51f3d40eee6fd89413eee460bd
 
 author=Designed by linuxcaffe, implemented by Claude
 license=MIT
